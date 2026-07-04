@@ -1,6 +1,5 @@
-use std::net::SocketAddr;
+use std::io::Read;
 use std::net::TcpListener;
-use std::net::TcpStream;
 
 pub struct Server {
     addr: String,
@@ -18,8 +17,17 @@ impl Server {
 
         loop {
             match listener.accept() {
-                Ok((stream, _)) => {
-                    println!("OK")
+                Ok((mut stream, _)) => {
+                    let mut buffer: [u8; 1024] = [0; 1024]; // replace with dynamic sizing
+                    match stream.read(&mut buffer) {
+                        Ok(_) => {
+                            println!(
+                                "Received an incoming request: {}",
+                                String::from_utf8_lossy(&buffer)
+                            )
+                        }
+                        Err(e) => println!("Failed to read from connection: {}", e),
+                    }
                 }
                 Err(e) => {
                     println!("Failed to establish a connection: {}", e)
